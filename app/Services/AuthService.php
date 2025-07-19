@@ -19,16 +19,17 @@ class AuthService
         ]);
 
         $credentials = $request->only('email', 'password');
-        $token = Auth::attempt($credentials);
+        $token = JWTAuth::attempt($credentials);
 
         if (!$token) {
             return null;
         }
 
-        $user = Auth::user();
-        $user->token = $token;
-
-        return $user;
+        $user = auth()->user();
+        return [
+        'user' => $user,
+        'token' => $token
+    ];
     }
 
     static function register(Request $request)

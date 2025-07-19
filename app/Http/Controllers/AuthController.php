@@ -13,11 +13,11 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $user = AuthService::login($request);
-        if ($user) {
-            return $this->responseJSON($user, 'Login successful');
+        $data = AuthService::login($request);
+        if (!$data) {
+            return $this->responseJSON(null, 'Invalid credentials', 401);
         }
-        return $this->responseJSON(null, 'Invalid credentials', 401);
+        return $this->responseJSON($data, 'Login successful', 200);
     }
 
     public function register(Request $request)
