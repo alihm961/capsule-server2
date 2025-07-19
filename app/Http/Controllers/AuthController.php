@@ -23,6 +23,6 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $user = AuthService::register($request);
-        return $this->responseJSON($user, 'Registration successful', true);
+        return $this->responseJSON($user, 'Registration successful', 200);
     }
 }
