@@ -31,5 +31,10 @@ class CapsuleController extends Controller {
         return $service->getAllCountries();
     }
 
+    function download($id, CapsuleService $service)
+    {
+        return $service->downloadZip($id);
+    }
+
 
 }

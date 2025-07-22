@@ -22,7 +22,8 @@ Route::group(["prefix" => "v1"], function () {
             Route::get("/user", [CapsuleController::class, 'index']); 
             Route::post("/create", [CapsuleController::class, 'store']); 
             Route::get("/public", [CapsuleController::class, 'publicWall']); 
-            Route::delete("/{id}", [CapsuleController::class, 'destroy']); 
+            Route::delete("/{id}", [CapsuleController::class, 'destroy']);
+            Route::get('/download/{id}', [CapsuleController::class, 'download']); 
         });
 
     });

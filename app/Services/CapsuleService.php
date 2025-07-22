@@ -11,12 +11,13 @@ use Stevebauman\Location\Facades\Location;
 use App\Models\Mood;
 use App\Models\Country;
 use Illuminate\Support\Carbon;
+use App\Traits\ZipCapsuleTrait;
 
 class CapsuleService
 {
-    use ApiResponse;
+    use ApiResponse, ZipCapsuleTrait;
 
-    public function create(Request $request)
+     function create(Request $request)
     {
         try {
             $validated = $request->validate([
@@ -34,18 +35,32 @@ class CapsuleService
             $audioPath = null;
 
             if ($request->has('image') && $request->image) {
-                $imageData = base64_decode($request->image);
-                $imageName = 'capsules/images/' . uniqid() . '.png';
-                Storage::disk('public')->put($imageName, $imageData);
-                $imagePath = $imageName;
+                $imageData = $request->image;
+                
+            if (strpos($imageData, 'base64,') !== false) {
+                $imageData = explode('base64,', $imageData)[1];
             }
-
+            
+            $decodedImage = base64_decode($imageData);
+            $imageName = 'capsules/images/' . uniqid() . '.png';
+            Storage::disk('public')->put($imageName, $decodedImage);
+            $imagePath = $imageName;
+        }
+        
+        
             if ($request->has('audio') && $request->audio) {
-                $audioData = base64_decode($request->audio);
-                $audioName = 'capsules/audio/' . uniqid() . '.mp3';
-                Storage::disk('public')->put($audioName, $audioData);
-                $audioPath = $audioName;
+                $audioData = $request->audio;
+                
+                
+            if (strpos($audioData, 'base64,') !== false) {
+                $audioData = explode('base64,', $audioData)[1];
             }
+            
+            $decodedAudio = base64_decode($audioData);
+            $audioName = 'capsules/audio/' . uniqid() . '.mp3';
+            Storage::disk('public')->put($audioName, $decodedAudio);
+            $audioPath = $audioName;
+        }
 
             $user = Auth::user();
 
@@ -93,7 +108,7 @@ class CapsuleService
     }
 
 
-    public function getUserCapsules(Request $request)
+     function getUserCapsules(Request $request)
 {
     $user = Auth::user();
 
@@ -107,7 +122,7 @@ class CapsuleService
 
     
 
-    public function getPublicCapsules(Request $request)
+     function getPublicCapsules(Request $request)
 {
     $capsules = Capsule::with(['mood', 'country'])
         ->where('is_public', true)
@@ -132,7 +147,7 @@ class CapsuleService
 }
 
 
-    public function delete($id)
+     function delete($id)
     {
         $capsule = Capsule::find($id);
 
@@ -149,7 +164,7 @@ class CapsuleService
         return $this->responseJSON('Capsule deleted successfully');
     }
 
-    public function getAllCountries() {
+     function getAllCountries() {
 
     $countries = Capsule::where('is_public', true)
         ->where(function ($query) {
@@ -164,6 +179,32 @@ class CapsuleService
         ->values();
 
     return response()->json(['data' => $countries]);
+}
+
+    function downloadZip($id)
+{
+    try {
+        $capsule = Capsule::with(['mood', 'country'])->findOrFail($id);
+
+        $zipFileName = 'capsule_' . $capsule->id . '.zip';
+        $zipFilePath = storage_path("app/public/zips/{$zipFileName}");
+
+        if (!file_exists(storage_path('app/public/zips'))) {
+            mkdir(storage_path('app/public/zips'), 0777, true);
+        }
+
+        $success = $this->createCapsuleZip($capsule, $zipFilePath);
+
+        if (!$success) {
+            return $this->responseJSON(null, 'Failed to create ZIP file', 500);
+        }
+
+        return response()->download($zipFilePath)->deleteFileAfterSend(true);
+
+    } catch (\Exception $e) {
+        \Log::error('Download ZIP failed: ' . $e->getMessage());
+        return response()->json(['message' => 'Internal server error'], 500);
+    }
 }
 
 }
