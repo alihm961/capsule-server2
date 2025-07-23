@@ -1,26 +1,22 @@
-name: Capsule Laravel CI
+name: Laravel Tests
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
 
 jobs:
   laravel-tests:
     runs-on: ubuntu-latest
-
     services:
       mysql:
-        image: mysql:8
+        image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: capsule_test
+          MYSQL_DATABASE: capsule
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -29,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up PHP
+      - name: Set up PHP using Ali's Action
         uses: alihm961/setup-php@v1
         with:
           php-version: '8.2'
