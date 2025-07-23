@@ -27,4 +27,4 @@ class AuthController extends Controller
     }
 }
 
-/*Testing as always */
+/*New PHP Setup*/
