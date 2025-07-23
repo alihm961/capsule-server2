@@ -26,3 +26,5 @@ class AuthController extends Controller
         return $this->responseJSON($user, 'Registration successful', 200);
     }
 }
+
+/*just for testing */
